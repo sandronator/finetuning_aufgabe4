@@ -24,7 +24,7 @@ if __name__ == '__main__':
     join_manager.setup_db("cl-both")
     join_manager.execute(aufgabe="Aufgabe 1c")
 
-    # Aufgabe 2 — vorheriger Lauf war 'cl-both' (CLUSTER hat Tabelle physisch sortiert);
+    # Aufgabe 2
     # reload_data=True stellt die ursprüngliche Ladereihenfolge wieder her.
     join_manager.setStrategy(NestedInnerLoopStrategy(conn_postsql, db_post, queries_postgres["with_index"]))
     join_manager.setup_db("nc-publ", reload_data=True)
@@ -34,7 +34,7 @@ if __name__ == '__main__':
     join_manager.setup_db("nc-both")
     join_manager.execute(aufgabe="Aufgabe 2c")
 
-    # Aufgabe 3 — Tabelle ist noch im Original-Layout, kein Reload nötig.
+    # Aufgabe 3 
     join_manager.setStrategy(SortMergeStrategy(conn_postsql, db_post, queries_postgres["no_index"]))
     join_manager.setup_db("no-index")
     join_manager.execute(aufgabe="Aufgabe 3a")
