@@ -32,11 +32,11 @@ class BaseStrategy:
             start = time.time()
             self.cursor.execute(query)
             end = time.time()
-            self._print_result(strategy, end, start)
+            self._print_result(query_name, prefix, end, start)
         self.connection.commit()
             
         
-    def _print_result(self, strategy, end, start):
+    def _print_result(self, query_name, prefix, end, start):
         duration = end - start
         minutes = int(duration // 60)
         seconds = duration % 60
