@@ -12,8 +12,8 @@ class Manager:
         self.strategy.set_queries(queries)
         
     # Only Postgresql and MariaDb available at the moment
-    def setup_db(self, index_config):
-        setup.setupBoth(index_config)
+    def setup_db(self, index_config, reload_data=False):
+        setup.reset_postgres(index_config, reload_data=reload_data)
         
     def execute(self):
         self.strategy.run()
