@@ -28,6 +28,7 @@ class BaseStrategy:
             self.cursor.execute(query)
             end = time.time()
             self._print_result(strategy, end, start)
+        self.connection.commit()
             
         
     def _print_result(self, strategy, end, start):
