@@ -1,2 +1,6 @@
 publ.tsv
 auth.tsv
+
+__pycache__
+repositorie/__pycache__
+aufgabe4
