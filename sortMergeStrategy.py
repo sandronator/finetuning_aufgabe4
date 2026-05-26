@@ -3,6 +3,7 @@ from baseStrategy import BaseStrategy
 
 class SortMergeStrategy(BaseStrategy):
     def __init__(self, conn, db_name, all_queries):
+        self.BASENAME = "Sort Merge "
         super().__init__(conn, db_name, all_queries)
 
     def run(self):

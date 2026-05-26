@@ -3,6 +3,7 @@ from baseStrategy import BaseStrategy
 
 class NestedInnerLoopStrategy(BaseStrategy):
     def __init__(self, conn, db_name, all_queries):
+        self.BASENAME = "Nested Inner Loop "
         super().__init__(conn, db_name, all_queries)
 
     def run(self):

@@ -12,13 +12,18 @@ class BaseStrategy:
         self.cursor = conn.cursor()
         self.db_name = db_name
         self.queries = queries
+        self.BASENAME = "Base "
+        self.strategy_name = self.BASENAME
     
     def set_queries(self, queries):
         self.queries = queries
         
+    def set_strategy(self, name: str):
+        self.strategy_name = self.BASENAME + name
+        
     def run(self):
         for strategy, query in self.queries.items():
-            print("Running: " + strategy + "\n")
+            print("Running: " + self.strategy_name + "\n")
             start = time.time()
             self.cursor.execute(query)
             end = time.time()

@@ -7,6 +7,9 @@ class Manager:
         
     def setStrategy(self, strategy: BaseStrategy):
         self.strategy = strategy
+        
+    def setStrategyName(self, name: str):
+        self.strategy.set_strategy(name)
     
     def setQueries(self, queries: dict[str, str]):
         self.strategy.set_queries(queries)
