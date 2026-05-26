@@ -17,7 +17,7 @@ class BaseStrategy:
         self.queries = queries
         
     def run(self):
-        for strategy, query in self.queries:
+        for strategy, query in self.queries.items():
             print("Running: " + strategy + "\n")
             start = time.time()
             self.cursor.execute(query)

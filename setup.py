@@ -34,7 +34,15 @@ INDEX_CONFIGS = {
 }
 
 
-def create_distribute_postgres(index_config):
+KNOWN_INDEX_NAMES = ("publ_pubid_idx", "auth_pubid_idx")
+
+
+def load_data_postgres():
+    """Drops and re-creates auth/publ in PostgreSQL and bulk-loads the TSV files.
+
+    Call this once at the start of a run, then use apply_indexes_postgres
+    between tests instead of reloading the whole dataset.
+    """
     _, connection = get_connection(maria=False)
     cursor = connection.cursor()
 
@@ -42,8 +50,8 @@ def create_distribute_postgres(index_config):
 
     start = time.time()
 
-    file_auth = open(f"{os.getenv("PATH_AUTH")}", "r", encoding="utf-8")
-    file_publ = open(f"{os.getenv("PATH_PUBL")}", "r", encoding="utf-8")
+    file_auth = open(f"{os.getenv('PATH_AUTH')}", "r", encoding="utf-8")
+    file_publ = open(f"{os.getenv('PATH_PUBL')}", "r", encoding="utf-8")
 
     cursor.copy_from(file_auth, "auth", sep="\t", columns=("name", "pubid"))
     cursor.copy_from(
@@ -55,26 +63,58 @@ def create_distribute_postgres(index_config):
 
     connection.commit()
     end = time.time()
-    entries = 0
+
     cursor.execute(COUNT_AUTH_ENTRIES_QUERY)
-    entries += cursor.fetchall()[0][0]
-    print("Entries Auth: " + str(entries))
+    auth_entries = cursor.fetchall()[0][0]
     cursor.execute(COUNT_PUBL_ENTRIES_QUERY)
     publ_entries = cursor.fetchall()[0][0]
-    print("Entries Publ: " + str(publ_entries))
-    entries += publ_entries
 
-    print("Total Entries (Auth, Publ): " + str(entries))
+    print(f"Entries Auth: {auth_entries}")
+    print(f"Entries Publ: {publ_entries}")
+    print(f"Total Entries (Auth, Publ): {auth_entries + publ_entries}")
+    print(f"PostgreSQL Load Runtime: {end - start:.2f} seconds")
 
-    print("PostgreSQL Runtime:", end - start, "seconds")
+    cursor.close()
+    connection.close()
+
+
+def apply_indexes_postgres(index_config):
+    """Drops all known indexes and applies the given index configuration.
+
+    Note: CLUSTER physically reorders the table. Dropping the index afterwards
+    does NOT undo that ordering. If a test needs the original physical order
+    after a previous 'cl-both' run, call load_data_postgres() again.
+    """
+    _, connection = get_connection(maria=False)
+    cursor = connection.cursor()
+
+    for idx_name in KNOWN_INDEX_NAMES:
+        cursor.execute(f"DROP INDEX IF EXISTS {idx_name};")
 
     for command in INDEX_CONFIGS[index_config]:
         print("Applying:", command)
         cursor.execute(command)
-    connection.commit()
 
+    connection.commit()
     cursor.close()
     connection.close()
+
+
+def reset_postgres(index_config, reload_data=False):
+    """Bring PostgreSQL into the desired state for the next test.
+
+    Set reload_data=True when the previous test clustered the table and the
+    next test needs a non-clustered physical layout.
+    """
+    if reload_data:
+        load_data_postgres()
+    apply_indexes_postgres(index_config)
+
+
+def create_distribute_postgres(index_config):
+    """Legacy: full reload + index setup in PostgreSQL. Kept for the CLI."""
+    load_data_postgres()
+    apply_indexes_postgres(index_config)
 
 
 def create_distribute_maria(index_config):
